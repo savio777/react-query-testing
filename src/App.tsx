@@ -2,23 +2,23 @@ import { useQuery } from "react-query";
 import axios from "axios";
 
 import "./App.css";
+import { useState } from "react";
 
-const userIdMock = "savio777";
+const getUser = async (id: number) => {
+  const response = await axios.get(`https://reqres.in/api/users/${id}?delay=5`);
 
-const getUser = async (id: string) => {
-  const response = await axios.get(`https://api.github.com/users/${id}`);
-
-  if (!response?.data) {
+  if (!response?.data?.data) {
     throw new Error("Erro na requisição");
   }
 
-  return response.data as IUser;
+  return response.data.data as IUser;
 };
 
 function App() {
-  const { data, isError, isLoading, error } = useQuery(
-    ["users", userIdMock],
-    () => getUser(userIdMock)
+  const [idUser, setIdUser] = useState(1);
+
+  const { data, isError, isLoading, error } = useQuery(["users", idUser], () =>
+    getUser(idUser)
   );
 
   if (isError) {
@@ -39,15 +39,22 @@ function App() {
 
   return (
     <div>
-      <img src={data?.avatar_url} alt={data?.name} />
+      <img src={data?.avatar} alt={data?.first_name} />
 
       <h2>
-        {data?.name} ({data?.login})
+        {data?.first_name} {data?.last_name} (#{data?.id})
       </h2>
 
-      <h3>{data?.bio}</h3>
+      <h3>{data?.email}</h3>
 
-      <h5>{data?.email}</h5>
+      <div>
+        <button onClick={() => setIdUser((prevState) => prevState - 1)}>
+          previous
+        </button>
+        <button onClick={() => setIdUser((prevState) => prevState + 1)}>
+          next
+        </button>
+      </div>
     </div>
   );
 }
